@@ -43,15 +43,16 @@ public class PlayFrame {
 	private JLabel lblNewLabel_8;
 	private boolean giocaPlayerUno = true;
 	private JLabel lblNewLabel_9;
+	private String connRobot;
 
 	/**
 	 * Launch the application.
 	 */
-	public void playFrame(String m, String n) {
+	public void playFrame(String m, String n, String c) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					PlayFrame window = new PlayFrame(m,n);
+					PlayFrame window = new PlayFrame(m,n,c);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -63,9 +64,10 @@ public class PlayFrame {
 	/**
 	 * Create the application.
 	 */
-	public PlayFrame(String m,String n) {
+	public PlayFrame(String m,String n, String c) {
 		this.modalita = m;
 		this.nome = n;
+		this.connRobot = c;
 		initialize();
 	}
 
@@ -79,7 +81,15 @@ public class PlayFrame {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
-
+		if(connRobot != null) {
+			if(connRobot.equalsIgnoreCase("SI")) {
+				System.out.println("connetto");
+				//TODO faccio la connessione
+			}
+			else {
+				System.out.println("non connetto");
+			}
+		}
 
 		Player playerUno = new Player(UtilityParameter.cellaBianca, "Damabot");
 		Player playerDue = new Player(UtilityParameter.cellaNera, nome);
@@ -156,144 +166,152 @@ public class PlayFrame {
 			public void actionPerformed(ActionEvent e) {
 
 				if(!finePartita) {
-					if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
-						//gioca player Uno
-						if(giocaPlayerUno) {
-							ArrayList<Pedina> cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerUno, playerDue);
+					//if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+					//gioca player Uno
+					if(giocaPlayerUno) {
+						ArrayList<Pedina> cercaMossaRandom = null;
+						
+						if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+							cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerUno, playerDue);
+						}
+						
+						if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
+							cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerUno, playerDue);
+						}
 
-							if(!cercaMossaRandom.isEmpty()) {
-								lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" "+cercaMossaRandom.toString());
-								mosseDisponibiliBianco = true;
-								Pedina pedina = cercaMossaRandom.get(0);
-								cS.movePedina(scacchiera, cercaMossaRandom.get(1), pedina, playerUno, playerDue);
 
-								lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
-								lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
-								lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
-								lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
+						if(!cercaMossaRandom.isEmpty()) {
+							lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" "+cercaMossaRandom.toString());
+							mosseDisponibiliBianco = true;
+							Pedina pedina = cercaMossaRandom.get(0);
+							cS.movePedina(scacchiera, cercaMossaRandom.get(1), pedina, playerUno, playerDue);
 
-								Object[][] scacchieraTemporany = new Object[][] {
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-									{null, null, null, null, null, null, null, null},
-								};
+							lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
+							lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
+							lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
+							lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
 
-								for(int i = 0 ; i< 8; i++) {
-									for(int j = 0; j < 8 ; j++) {
-										if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-											scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
+							Object[][] scacchieraTemporany = new Object[][] {
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+								{null, null, null, null, null, null, null, null},
+							};
+
+							for(int i = 0 ; i< 8; i++) {
+								for(int j = 0; j < 8 ; j++) {
+									if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
+										scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
+									}
+								}
+							}
+
+							table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
+						}
+						else {
+							lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
+							mosseDisponibiliBianco = false;
+						}
+
+						//TODO invia mossa a robot
+						giocaPlayerUno = false;
+						textField.setVisible(true);
+						textField.setText("");
+
+					}
+					else {
+
+						//gioca player Due
+						boolean inserisciMossaPossibile = false;
+						while(!inserisciMossaPossibile) {
+							//legge mossa 
+							String mossaInput = textField.getText().toLowerCase();
+							int[] mosseInputParse = parseInput(mossaInput);
+
+							if(mosseInputParse != null) {
+
+								Pedina pedinaSposta = new Pedina(mosseInputParse[0],mosseInputParse[1],UtilityParameter.cellaNera);
+								Pedina pedinaSpostata = new Pedina(mosseInputParse[2],mosseInputParse[3],UtilityParameter.cellaNera);
+								//verifica mossa tra quelle disponibili
+								HashMap<Pedina,List<Pedina>> mossePossibili = cS.cercaMossa(scacchiera, playerDue, playerUno);
+
+								for (Pedina key : mossePossibili.keySet()) {
+									System.out.println(key + " = " + mossePossibili.get(key));
+								}
+
+								boolean mossaPossibile = false;
+								for (Pedina key : mossePossibili.keySet()) {
+									if(pedinaSposta.getPosI() == key.getPosI() && pedinaSposta.getPosJ() == key.getPosJ()) {
+										List<Pedina> resultMossePossibiliPedina = mossePossibili.get(key);
+										for(Pedina pedineMosse : resultMossePossibiliPedina) {
+											if(pedineMosse.getPosI() == pedinaSpostata.getPosI() && pedineMosse.getPosJ() == pedinaSpostata.getPosJ()) {
+												mossaPossibile = true;
+												pedinaSpostata = pedineMosse;
+												break;
+											}
 										}
 									}
 								}
 
-								table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
-							}
-							else {
-								lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
-								mosseDisponibiliBianco = false;
-							}
+								//fa la mossa
+								if(mossaPossibile) {
+									cS.movePedina(scacchiera, pedinaSpostata, pedinaSposta, playerDue,playerUno);
+									//System.out.println(scacchiera);
+									lblNewLabel_9.setVisible(false);
+									inserisciMossaPossibile = true;
 
-							//TODO invia mossa a robot
-							giocaPlayerUno = false;
-							textField.setVisible(true);
-							textField.setText("");
+									lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
+									lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
+									lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
+									lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
 
-						}
-						else {
+									Object[][] scacchieraTemporany = new Object[][] {
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+										{null, null, null, null, null, null, null, null},
+									};
 
-							//gioca player Due
-							boolean inserisciMossaPossibile = false;
-							while(!inserisciMossaPossibile) {
-								//legge mossa 
-								String mossaInput = textField.getText().toLowerCase();
-								int[] mosseInputParse = parseInput(mossaInput);
-
-								if(mosseInputParse != null) {
-
-									Pedina pedinaSposta = new Pedina(mosseInputParse[0],mosseInputParse[1],UtilityParameter.cellaNera);
-									Pedina pedinaSpostata = new Pedina(mosseInputParse[2],mosseInputParse[3],UtilityParameter.cellaNera);
-									//verifica mossa tra quelle disponibili
-									HashMap<Pedina,List<Pedina>> mossePossibili = cS.cercaMossa(scacchiera, playerDue, playerUno);
-
-									for (Pedina key : mossePossibili.keySet()) {
-										System.out.println(key + " = " + mossePossibili.get(key));
-									}
-
-									boolean mossaPossibile = false;
-									for (Pedina key : mossePossibili.keySet()) {
-										if(pedinaSposta.getPosI() == key.getPosI() && pedinaSposta.getPosJ() == key.getPosJ()) {
-											List<Pedina> resultMossePossibiliPedina = mossePossibili.get(key);
-											for(Pedina pedineMosse : resultMossePossibiliPedina) {
-												if(pedineMosse.getPosI() == pedinaSpostata.getPosI() && pedineMosse.getPosJ() == pedinaSpostata.getPosJ()) {
-													mossaPossibile = true;
-													pedinaSpostata = pedineMosse;
-													break;
-												}
+									for(int i = 0 ; i< 8; i++) {
+										for(int j = 0; j < 8 ; j++) {
+											if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
+												scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
 											}
 										}
 									}
+									table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));		
 
-									//fa la mossa
-									if(mossaPossibile) {
-										cS.movePedina(scacchiera, pedinaSpostata, pedinaSposta, playerDue,playerUno);
-										//System.out.println(scacchiera);
-										lblNewLabel_9.setVisible(false);
-										inserisciMossaPossibile = true;
-
-										lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
-										lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
-										lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
-										lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
-										
-										Object[][] scacchieraTemporany = new Object[][] {
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-											{null, null, null, null, null, null, null, null},
-										};
-
-										for(int i = 0 ; i< 8; i++) {
-											for(int j = 0; j < 8 ; j++) {
-												if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-													scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
-												}
-											}
-										}
-										table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));		
-
-										//TODO invia mossa a robot
-										textField.setVisible(false);
-										giocaPlayerUno = true;
-									}
-									else {
-										inserisciMossaPossibile = true;
-										lblNewLabel_9.setVisible(true);
-										textField.setText("");
-									}
-
+									//TODO invia mossa a robot
+									textField.setVisible(false);
+									giocaPlayerUno = true;
 								}
 								else {
 									inserisciMossaPossibile = true;
 									lblNewLabel_9.setVisible(true);
 									textField.setText("");
-								}	
-							}
-						}
+								}
 
-						//controllo fine partita
-						//TODO da sistemare
-						if(playerUno.getPedineInGioco() < 3 || playerDue.getPedineInGioco() < 3) {
-							finePartita = true;
+							}
+							else {
+								inserisciMossaPossibile = true;
+								lblNewLabel_9.setVisible(true);
+								textField.setText("");
+							}	
 						}
+					}
+
+					//controllo fine partita
+					//TODO da sistemare
+					if(playerUno.getPedineInGioco() < 3 || playerDue.getPedineInGioco() < 3) {
+						finePartita = true;
 					}
 				}
 			}
