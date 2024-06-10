@@ -77,7 +77,7 @@ public class MainFrame extends JFrame {
 		contentPane.add(textField);
 		textField.setColumns(10);
 
-		JLabel lblNewLabel_1 = new JLabel("Inserisci il tuo Nickname");
+		JLabel lblNewLabel_1 = new JLabel("Inserisci  il tuo Nickname");
 		lblNewLabel_1.setBounds(20, 66, 132, 14);
 		contentPane.add(lblNewLabel_1);
 
