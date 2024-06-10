@@ -11,9 +11,14 @@ import model.Player;
 import model.Scacchiera;
 import utility.UtilityParameter;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +49,9 @@ public class PlayFrame {
 	private boolean giocaPlayerUno = true;
 	private JLabel lblNewLabel_9;
 	private String connRobot;
+	private int port = 29999;
+	private Socket socket;
+	private DataOutputStream bufReader;
 
 	/**
 	 * Launch the application.
@@ -76,20 +84,50 @@ public class PlayFrame {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 549, 398);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
 
 		if(connRobot != null) {
 			if(connRobot.equalsIgnoreCase("SI")) {
 				System.out.println("connetto");
-				//TODO faccio la connessione
+				try(ServerSocket serverSocket = new ServerSocket(port)) {
+					socket = serverSocket.accept();
+					bufReader = new DataOutputStream(socket.getOutputStream());
+
+				}catch(IOException ex) {
+					System.out.println("Server exception: "+ ex.getMessage());
+					ex.printStackTrace();
+				}
 			}
 			else {
 				System.out.println("non connetto");
 			}
 		}
+
+		frame = new JFrame();
+		frame.setBounds(100, 100, 549, 398);
+		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				if (JOptionPane.showConfirmDialog(frame, 
+						"Are you sure you want to close this window?", "Close Window?", 
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+					try {
+						if(bufReader != null && socket != null) {
+							bufReader.close();
+							socket.close();
+						}
+					} catch (IOException e) {
+						System.out.println("Server exception: "+ e.getMessage());
+						e.printStackTrace();
+					}
+
+					System.exit(0);
+				}
+			}
+		});
+
 
 		Player playerUno = new Player(UtilityParameter.cellaBianca, "Damabot");
 		Player playerDue = new Player(UtilityParameter.cellaNera, nome);
@@ -163,18 +201,19 @@ public class PlayFrame {
 		btnNewButton = new JButton("Mossa");
 
 		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
 
+			public void actionPerformed(ActionEvent e) {
+				String mossaRobot = "";
 				if(!finePartita) {
-					//if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+
 					//gioca player Uno
 					if(giocaPlayerUno) {
 						ArrayList<Pedina> cercaMossaRandom = null;
-						
+
 						if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
 							cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerUno, playerDue);
 						}
-						
+
 						if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
 							cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerUno, playerDue);
 						}
@@ -185,7 +224,24 @@ public class PlayFrame {
 							mosseDisponibiliBianco = true;
 							Pedina pedina = cercaMossaRandom.get(0);
 							cS.movePedina(scacchiera, cercaMossaRandom.get(1), pedina, playerUno, playerDue);
+							
+							if(cercaMossaRandom.get(1).isDama()) {
+								mossaRobot = "D";	
+							}
+							else {
+								mossaRobot = "N";
+							}
+							
+							mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
 
+							if(pedina.isDama()) {
+								mossaRobot += "D";	
+							}
+							else {
+								mossaRobot += "N";
+							}
+							mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
+							
 							lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
 							lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
 							lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
@@ -217,7 +273,15 @@ public class PlayFrame {
 							mosseDisponibiliBianco = false;
 						}
 
-						//TODO invia mossa a robot
+						//invia mossa a robot
+						if(connRobot.equalsIgnoreCase("SI")) {
+							try {
+								bufReader.writeUTF(mossaRobot);
+							} catch (IOException e1) {
+								System.out.println("Server exception: "+ e1.getMessage());
+								e1.printStackTrace();
+							}
+						}
 						giocaPlayerUno = false;
 						textField.setVisible(true);
 						textField.setText("");
@@ -260,6 +324,25 @@ public class PlayFrame {
 								//fa la mossa
 								if(mossaPossibile) {
 									cS.movePedina(scacchiera, pedinaSpostata, pedinaSposta, playerDue,playerUno);
+									
+									if(pedinaSpostata.isDama()) {
+										mossaRobot = "D";	
+									}
+									else {
+										mossaRobot = "N";
+									}
+									
+									mossaRobot += pedinaSpostata.getPosI()+""+pedinaSpostata.getPosJ();
+									
+									if(pedinaSposta.isDama()) {
+										mossaRobot += "D";	
+									}
+									else {
+										mossaRobot += "N";
+									}		
+									mossaRobot += pedinaSposta.getPosI()+""+pedinaSposta.getPosJ();
+									
+									
 									//System.out.println(scacchiera);
 									lblNewLabel_9.setVisible(false);
 									inserisciMossaPossibile = true;
@@ -289,7 +372,15 @@ public class PlayFrame {
 									}
 									table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));		
 
-									//TODO invia mossa a robot
+									//invia mossa a robot
+									if(connRobot.equalsIgnoreCase("SI")) {
+										try {
+											bufReader.writeUTF(mossaRobot);
+										} catch (IOException e1) {
+											System.out.println("Server exception: "+ e1.getMessage());
+											e1.printStackTrace();
+										}
+									}
 									textField.setVisible(false);
 									giocaPlayerUno = true;
 								}
