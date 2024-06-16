@@ -194,7 +194,7 @@ public class ControlliSchacchiera {
 						}
 						result.add(app);
 					}
-				} 
+				}  
 			}
 			//CASO 1.3 la cella a sinistra � occupata da una mia pedina, non faccio niente
 			else {
