@@ -14,38 +14,42 @@ public class ControlliSchacchiera {
 
 
 	//muove la pedina nella scacchiera
-	public String movePedina(Scacchiera scacchiera,Pedina pedinaSpo, Pedina pedina, Player playerMove, Player playerStop) {
-		if(pedinaSpo.getPosI() >= 8 || pedinaSpo.getPosJ() >= 8) {
+	//la mossa deve essere valida
+	public String movePedina(Scacchiera scacchiera,int iStart, int jStart, int iFine, int jFine, Player playerMove, Player playerStop) {
+		if(iFine >= 8 || jFine >= 8) {
 			return UtilityParameter.valoriErrati;
 		}
-		if(!scacchiera.getScacchiera()[pedinaSpo.getPosI()][pedinaSpo.getPosJ()].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
+		if(!scacchiera.getScacchiera()[iFine][jFine].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
 			return UtilityParameter.cellaOccupata;
 		}
-		scacchiera.getScacchiera()[pedinaSpo.getPosI()][pedinaSpo.getPosJ()].setColore(playerMove.getColor());
-		scacchiera.getScacchiera()[pedina.getPosI()][pedina.getPosJ()].setColore(UtilityParameter.cellaEmpty);
-		if(pedinaSpo.isMangia()) {
+		scacchiera.getScacchiera()[iFine][jFine].setColore(playerMove.getColor());
+		if(iFine == 0 || iFine == 7 || scacchiera.getScacchiera()[iStart][jStart].isDama()) {
+			scacchiera.getScacchiera()[iFine][jFine].setDama(true);
+		}
+		scacchiera.getScacchiera()[iStart][jStart].setColore(UtilityParameter.cellaEmpty);
+		if(iStart + 2 == iFine || iStart == iFine + 2) {
 			playerMove.setPedineMangiate();
 			playerStop.setPedinePerse();
 			playerStop.setPedineInGioco();
-			cercaPedinaMangiata( scacchiera, pedinaSpo.getPosI(),  pedinaSpo.getPosJ(), pedina);
+			cercaPedinaMangiata( scacchiera, iFine,  jFine, iStart, jStart);
 		}
 		return UtilityParameter.ok;
 	}
 
 
 	//cerca la pedina mangiata
-	private void cercaPedinaMangiata(Scacchiera scacchiera, int posI, int posJ, Pedina pedina) {
-		if(posI < pedina.getPosI() && posJ > pedina.getPosJ()) {
-			scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()+1].setColore(UtilityParameter.cellaEmpty);
+	private void cercaPedinaMangiata(Scacchiera scacchiera, int posI, int posJ, int xStart, int jStart) {
+		if(posI < xStart && posJ > jStart) {
+			scacchiera.getScacchiera()[xStart-1][jStart+1].setColore(UtilityParameter.cellaEmpty);
 		}
-		if(posI < pedina.getPosI() && posJ < pedina.getPosJ()) {
-			scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()-1].setColore(UtilityParameter.cellaEmpty);
+		if(posI < xStart && posJ < jStart) {
+			scacchiera.getScacchiera()[xStart-1][jStart-1].setColore(UtilityParameter.cellaEmpty);
 		}
-		if(posI > pedina.getPosI() && posJ > pedina.getPosJ()) {
-			scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()+1].setColore(UtilityParameter.cellaEmpty);
+		if(posI > xStart && posJ > jStart) {
+			scacchiera.getScacchiera()[xStart+1][jStart+1].setColore(UtilityParameter.cellaEmpty);
 		}
-		if(posI > pedina.getPosI() && posJ < pedina.getPosJ()) {
-			scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()-1].setColore(UtilityParameter.cellaEmpty);
+		if(posI > xStart && posJ < jStart) {
+			scacchiera.getScacchiera()[xStart+1][jStart-1].setColore(UtilityParameter.cellaEmpty);
 		}
 	}
 
@@ -130,18 +134,23 @@ public class ControlliSchacchiera {
 			//CASO 2.2 la cella a destra � occupata da una piedina avversaria, provo a mangiare
 			if(!scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()+1].getColore().equalsIgnoreCase(pedina.getColore()) && pedina.getPosI() < 6 && pedina.getPosJ() < 6) {
 				if(scacchiera.getScacchiera()[pedina.getPosI()+2][pedina.getPosJ()+2].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
-					Pedina app = new Pedina(pedina.getPosI()+2,pedina.getPosJ()+2,pedina.getColore());
-					app.setMangia(true);
-					app.setPosImangia(pedina.getPosI()+1);
-					app.setPosJmangia(pedina.getPosJ()+1);
-					
-					//controllo se dama
-					if(!pedina.isDama()) {
-						if(app.getPosI() == 7) {
-							app.setDama(true);
+
+					if((pedina.isDama() && scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()+1].isDama()) || (pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()+1].isDama()) || (!pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()+1].isDama())) {
+
+
+						Pedina app = new Pedina(pedina.getPosI()+2,pedina.getPosJ()+2,pedina.getColore());
+						app.setMangia(true);
+						app.setPosImangia(pedina.getPosI()+1);
+						app.setPosJmangia(pedina.getPosJ()+1);
+
+						//controllo se dama
+						if(!pedina.isDama()) {
+							if(app.getPosI() == 7) {
+								app.setDama(true);
+							}
 						}
+						result.add(app);
 					}
-					result.add(app);
 				}
 			}
 			//CASO 3.3 la cella a destra � occupata da una mia pedina, non faccio niente
@@ -169,18 +178,22 @@ public class ControlliSchacchiera {
 			//CASO 1.2 la cella a sinistra � occupata da una piedina avversaria, provo a mangiare
 			if(!scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()-1].getColore().equalsIgnoreCase(pedina.getColore()) && pedina.getPosI() < 6 && pedina.getPosJ() >1) {
 				if(scacchiera.getScacchiera()[pedina.getPosI()+2][pedina.getPosJ()-2].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
-					Pedina app = new Pedina(pedina.getPosI()+2,pedina.getPosJ()-2,pedina.getColore());
-					app.setMangia(true);
-					app.setPosImangia(pedina.getPosI()+1);
-					app.setPosJmangia(pedina.getPosJ()-1);
-					
-					//controllo se dama
-					if(!pedina.isDama()) {
-						if(app.getPosI() == 7) {
-							app.setDama(true);
+
+					if((pedina.isDama() && scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()-1].isDama()) || (pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()-1].isDama()) || (!pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()+1][pedina.getPosJ()-1].isDama())) {
+
+						Pedina app = new Pedina(pedina.getPosI()+2,pedina.getPosJ()-2,pedina.getColore());
+						app.setMangia(true);
+						app.setPosImangia(pedina.getPosI()+1);
+						app.setPosJmangia(pedina.getPosJ()-1);
+
+						//controllo se dama
+						if(!pedina.isDama()) {
+							if(app.getPosI() == 7) {
+								app.setDama(true);
+							}
 						}
+						result.add(app);
 					}
-					result.add(app);
 				}
 			}
 			//CASO 1.3 la cella a sinistra � occupata da una mia pedina, non faccio niente
@@ -209,18 +222,22 @@ public class ControlliSchacchiera {
 			//CASO 1.2 la cella a sinistra � occupata da una piedina avversaria, provo a mangiare
 			if(!scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()-1].getColore().equalsIgnoreCase(pedina.getColore()) && pedina.getPosI() > 1 && pedina.getPosJ() > 1) {
 				if(scacchiera.getScacchiera()[pedina.getPosI()-2][pedina.getPosJ()-2].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
-					Pedina app = new Pedina(pedina.getPosI()-2,pedina.getPosJ()-2,pedina.getColore());
-					app.setMangia(true);
-					app.setPosImangia(pedina.getPosI()-1);
-					app.setPosJmangia(pedina.getPosJ()-1);
-					
-					//controllo se dama
-					if(!pedina.isDama()) {
-						if(app.getPosI() == 0) {
-							app.setDama(true);
+
+					if((pedina.isDama() && scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()-1].isDama()) || (pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()-1].isDama()) || (!pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()-1].isDama())) {
+
+						Pedina app = new Pedina(pedina.getPosI()-2,pedina.getPosJ()-2,pedina.getColore());
+						app.setMangia(true);
+						app.setPosImangia(pedina.getPosI()-1);
+						app.setPosJmangia(pedina.getPosJ()-1);
+
+						//controllo se dama
+						if(!pedina.isDama()) {
+							if(app.getPosI() == 0) {
+								app.setDama(true);
+							}
 						}
+						result.add(app);
 					}
-					result.add(app);
 				}
 			}
 			//CASO 1.3 la cella a sinistra � occupata da una mia pedina, non faccio niente
@@ -248,19 +265,23 @@ public class ControlliSchacchiera {
 			//CASO 2.2 la cella a destra � occupata da una piedina avversaria, provo a mangiare
 			if(!scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()+1].getColore().equalsIgnoreCase(pedina.getColore()) && pedina.getPosI() > 1 && pedina.getPosJ() < 6) {
 				if(scacchiera.getScacchiera()[pedina.getPosI()-2][pedina.getPosJ()+2].getColore().equalsIgnoreCase(UtilityParameter.cellaEmpty)) {
-					Pedina app = new Pedina(pedina.getPosI()-2,pedina.getPosJ()+2,pedina.getColore());
-					app.setMangia(true);
-					app.setPosImangia(pedina.getPosI()-1);
-					app.setPosJmangia(pedina.getPosJ()+1);
-									
-					//controllo se dama
-					if(!pedina.isDama()) {
-						if(app.getPosI() == 0) {
-							app.setDama(true);
+
+					if((pedina.isDama() && scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()+1].isDama()) || (pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()+1].isDama()) || (!pedina.isDama() && !scacchiera.getScacchiera()[pedina.getPosI()-1][pedina.getPosJ()+1].isDama())) {
+
+						Pedina app = new Pedina(pedina.getPosI()-2,pedina.getPosJ()+2,pedina.getColore());
+						app.setMangia(true);
+						app.setPosImangia(pedina.getPosI()-1);
+						app.setPosJmangia(pedina.getPosJ()+1);
+
+						//controllo se dama
+						if(!pedina.isDama()) {
+							if(app.getPosI() == 0) {
+								app.setDama(true);
+							}
 						}
+
+						result.add(app);
 					}
-										
-					result.add(app);
 				}
 			}
 			//CASO 3.3 la cella a destra � occupata da una mia pedina, non faccio niente
