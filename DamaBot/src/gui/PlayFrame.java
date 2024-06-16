@@ -103,7 +103,7 @@ public class PlayFrame {
 		}
 
 		frame = new JFrame();
-		frame.setBounds(100, 100, 549, 398);
+		frame.setBounds(100, 100, 627, 398);
 		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -147,7 +147,7 @@ public class PlayFrame {
 					{null, UtilityParameter.cellaNera, null, UtilityParameter.cellaNera, null, UtilityParameter.cellaNera, null, UtilityParameter.cellaNera},
 					{UtilityParameter.cellaNera, null, UtilityParameter.cellaNera, null, UtilityParameter.cellaNera, null, UtilityParameter.cellaNera, null},
 				},new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));
-		table.setBounds(71, 36, 359, 128);
+		table.setBounds(71, 36, 503, 128);
 		frame.getContentPane().add(table);
 
 		JLabel lblNewLabel = new JLabel("Inserisci Mossa");
@@ -200,6 +200,95 @@ public class PlayFrame {
 
 		btnNewButton = new JButton("Mossa");
 
+		
+		JButton btnNewButton_1 = new JButton("Mossa Bianco");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String mossaRobot = "";
+				ArrayList<Pedina> cercaMossaRandom = null;
+
+				if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+					cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerDue, playerUno);
+				}
+
+				if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
+					cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerDue, playerUno);
+				}
+
+
+				if(!cercaMossaRandom.isEmpty()) {
+					mosseDisponibiliNero = true;
+					Pedina pedina = cercaMossaRandom.get(0);
+					cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerDue, playerUno);
+					
+					if(cercaMossaRandom.get(1).isDama()) {
+						mossaRobot = "D";	
+					}
+					else {
+						mossaRobot = "N";
+					}
+					
+					mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
+
+					if(pedina.isDama()) {
+						mossaRobot += "D";	
+					}
+					else {
+						mossaRobot += "N";
+					}
+					mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
+					
+					lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
+					lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
+					lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
+					lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
+
+					Object[][] scacchieraTemporany = new Object[][] {
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+						{null, null, null, null, null, null, null, null},
+					};
+
+					for(int i = 0 ; i< 8; i++) {
+						for(int j = 0; j < 8 ; j++) {
+							if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
+								scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
+							}
+						}
+					}
+
+					table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
+				}
+				else {
+					lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
+					mosseDisponibiliBianco = false;
+				}
+
+				//invia mossa a robot
+				if(connRobot.equalsIgnoreCase("SI")) {
+					try {
+						bufReader.writeUTF(mossaRobot);
+					} catch (IOException e1) {
+						System.out.println("Server exception: "+ e1.getMessage());
+						e1.printStackTrace();
+					}
+				}
+				giocaPlayerUno = true;
+				textField.setVisible(true);
+				textField.setText("");
+
+			
+			}
+		});
+		btnNewButton_1.setBounds(20, 232, 127, 23);
+		frame.getContentPane().add(btnNewButton_1);
+		
+		
 		btnNewButton.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
@@ -223,7 +312,7 @@ public class PlayFrame {
 							lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" "+cercaMossaRandom.toString());
 							mosseDisponibiliBianco = true;
 							Pedina pedina = cercaMossaRandom.get(0);
-							cS.movePedina(scacchiera, cercaMossaRandom.get(1), pedina, playerUno, playerDue);
+							cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerUno, playerDue);
 							
 							if(cercaMossaRandom.get(1).isDama()) {
 								mossaRobot = "D";	
@@ -261,7 +350,7 @@ public class PlayFrame {
 							for(int i = 0 ; i< 8; i++) {
 								for(int j = 0; j < 8 ; j++) {
 									if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-										scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
+										scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
 									}
 								}
 							}
@@ -315,6 +404,10 @@ public class PlayFrame {
 											if(pedineMosse.getPosI() == pedinaSpostata.getPosI() && pedineMosse.getPosJ() == pedinaSpostata.getPosJ()) {
 												mossaPossibile = true;
 												pedinaSpostata = pedineMosse;
+												
+//												if(key.isDama()) {
+//													pedinaSpostata.setDama(true);
+//												}
 												break;
 											}
 										}
@@ -323,7 +416,7 @@ public class PlayFrame {
 
 								//fa la mossa
 								if(mossaPossibile) {
-									cS.movePedina(scacchiera, pedinaSpostata, pedinaSposta, playerDue,playerUno);
+									cS.movePedina(scacchiera,pedinaSposta.getPosI(), pedinaSposta.getPosJ(), pedinaSpostata.getPosI(), pedinaSpostata.getPosJ(), playerDue,playerUno);
 									
 									if(pedinaSpostata.isDama()) {
 										mossaRobot = "D";	
@@ -366,7 +459,7 @@ public class PlayFrame {
 									for(int i = 0 ; i< 8; i++) {
 										for(int j = 0; j < 8 ; j++) {
 											if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-												scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore();
+												scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
 											}
 										}
 									}
@@ -411,6 +504,8 @@ public class PlayFrame {
 		frame.getContentPane().add(btnNewButton);
 
 		frame.getContentPane().add(lblNewLabel_9);
+		
+		
 	}
 
 	//parse della mossa in input
