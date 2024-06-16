@@ -160,7 +160,7 @@ public class PlayFrame {
 		textField.setColumns(10);
 		textField.setVisible(false);
 
-		lblNewLabel_1 = new JLabel("Player Bianco "+playerDue.getNome());
+		lblNewLabel_1 = new JLabel("Player Nero "+playerDue.getNome());
 		lblNewLabel_1.setBounds(41, 261, 129, 14);
 		frame.getContentPane().add(lblNewLabel_1);
 
@@ -173,7 +173,7 @@ public class PlayFrame {
 		lblNewLabel_3.setBounds(20, 286, 76, 28);
 		frame.getContentPane().add(lblNewLabel_3);
 
-		lblNewLabel_4 = new JLabel("Player Nero "+playerUno.getNome());
+		lblNewLabel_4 = new JLabel("Player Bianco "+playerUno.getNome());
 		lblNewLabel_4.setBounds(316, 261, 128, 14);
 		frame.getContentPane().add(lblNewLabel_4);
 
