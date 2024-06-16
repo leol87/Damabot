@@ -101,7 +101,7 @@ public class PlayFrame {
 				System.out.println("non connetto");
 			}
 		}
-
+ 
 		frame = new JFrame();
 		frame.setBounds(100, 100, 627, 398);
 		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
