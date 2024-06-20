@@ -200,6 +200,12 @@ public class PlayFrame {
 		btnNewButton = new JButton("Mossa Bianco");
 
 
+		JLabel lblNewLabel_10 = new JLabel("VINCE IL PLAYER:");
+		lblNewLabel_10.setBounds(219, 176, 178, 14);
+		frame.getContentPane().add(lblNewLabel_10);
+		lblNewLabel_10.setVisible(false);
+
+
 		JButton btnNewButton_1 = new JButton("Mossa Nero");
 		btnNewButton_1.setVisible(false);
 		btnNewButton_1.addActionListener(new ActionListener() {
@@ -355,6 +361,15 @@ public class PlayFrame {
 						textField.setVisible(false);
 						lblNewLabel_8.setVisible(false);
 						btnNewButton.setVisible(false);
+
+						if(playerUno.getPedineInGioco() < 3) {
+							lblNewLabel_10.setText("VINCE IL PLAYER NERO" );
+						}
+						else {
+							lblNewLabel_10.setText("VINCE IL PLAYER BIANCO" );
+						}
+						lblNewLabel_10.setVisible(true);
+
 					}
 				}
 			}
@@ -457,6 +472,13 @@ public class PlayFrame {
 						textField.setVisible(false);
 						lblNewLabel_8.setVisible(false);	
 						btnNewButton.setVisible(false);
+						if(playerUno.getPedineInGioco() < 3) {
+							lblNewLabel_10.setText("VINCE IL PLAYER NERO" );
+						}
+						else {
+							lblNewLabel_10.setText("VINCE IL PLAYER BIANCO" );
+						}
+						lblNewLabel_10.setVisible(true);
 					}
 				}
 			}
@@ -465,6 +487,8 @@ public class PlayFrame {
 		frame.getContentPane().add(btnNewButton);
 
 		frame.getContentPane().add(lblNewLabel_9);
+
+
 
 	}
 
