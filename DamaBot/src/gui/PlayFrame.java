@@ -43,10 +43,9 @@ public class PlayFrame {
 	private JLabel lblNewLabel_5;
 	private JLabel lblNewLabel_6;
 	private JLabel lblNewLabel_7;
-	private boolean mosseDisponibiliBianco = true;
-	private boolean mosseDisponibiliNero = true;
+
 	private JLabel lblNewLabel_8;
-	private boolean giocaPlayerUno = true;
+
 	private JLabel lblNewLabel_9;
 	private String connRobot;
 	private int port = 29999;
@@ -101,7 +100,7 @@ public class PlayFrame {
 				System.out.println("non connetto");
 			}
 		}
- 
+
 		frame = new JFrame();
 		frame.setBounds(100, 100, 627, 398);
 		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -198,47 +197,119 @@ public class PlayFrame {
 		lblNewLabel_9.setBounds(81, 175, 160, 15);
 		lblNewLabel_9.setVisible(false);
 
-		btnNewButton = new JButton("Mossa");
+		btnNewButton = new JButton("Mossa Bianco");
 
-		
-		JButton btnNewButton_1 = new JButton("Mossa Bianco");
+
+		JButton btnNewButton_1 = new JButton("Mossa Nero");
 		btnNewButton_1.setVisible(false);
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String mossaRobot = "";
 				ArrayList<Pedina> cercaMossaRandom = null;
+				boolean mossaTrovata = false;
 
-				if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
-					cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerDue, playerUno);
+				//legge mossa 
+				String mossaInput = textField.getText().toLowerCase();
+				int[] mosseInputParse = parseInput(mossaInput);
+
+				//se mossa inserita
+				if(mosseInputParse != null) {
+					Pedina pedinaSposta = new Pedina(mosseInputParse[0],mosseInputParse[1],UtilityParameter.cellaNera);
+					Pedina pedinaSpostata = new Pedina(mosseInputParse[2],mosseInputParse[3],UtilityParameter.cellaNera);	
+					//verifica mossa tra quelle disponibili
+					HashMap<Pedina,List<Pedina>> mossePossibili = cS.cercaMossa(scacchiera, playerDue, playerUno);
+
+					//						for (Pedina key : mossePossibili.keySet()) {
+					//							System.out.println(key + " = " + mossePossibili.get(key));
+					//						}
+
+					boolean mossaPossibile = false;
+					for (Pedina key : mossePossibili.keySet()) {
+						if(pedinaSposta.getPosI() == key.getPosI() && pedinaSposta.getPosJ() == key.getPosJ()) {
+							List<Pedina> resultMossePossibiliPedina = mossePossibili.get(key);
+							for(Pedina pedineMosse : resultMossePossibiliPedina) {
+								if(pedineMosse.getPosI() == pedinaSpostata.getPosI() && pedineMosse.getPosJ() == pedinaSpostata.getPosJ()) {
+									mossaPossibile = true;
+									pedinaSpostata = pedineMosse;
+									break;
+								}
+							}
+						}
+					}
+					if(mossaPossibile) {
+						cS.movePedina(scacchiera,pedinaSposta.getPosI(), pedinaSposta.getPosJ(), pedinaSpostata.getPosI(), pedinaSpostata.getPosJ(), playerDue,playerUno);
+
+						if(pedinaSpostata.isDama()) {
+							mossaRobot = "D";	
+						}
+						else {
+							mossaRobot = "N";
+						}
+
+						mossaRobot += pedinaSpostata.getPosI()+""+pedinaSpostata.getPosJ();
+
+						if(pedinaSposta.isDama()) {
+							mossaRobot += "D";	
+						}
+						else {
+							mossaRobot += "N";
+						}		
+						mossaRobot += pedinaSposta.getPosI()+""+pedinaSposta.getPosJ();
+						mossaTrovata = true;
+					}	
+					else {
+						mossaTrovata = false;
+						lblNewLabel_9.setVisible(true);
+						textField.setText("");
+					}		
+				}
+				else {
+					if(mossaInput.isEmpty()) {
+						if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+							cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerDue, playerUno);
+						}
+
+						if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
+							cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerDue, playerUno);
+						}
+
+						if(!cercaMossaRandom.isEmpty()) {
+							Pedina pedina = cercaMossaRandom.get(0);
+							cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerDue, playerUno);
+							lblNewLabel_9.setVisible(false);
+							if(cercaMossaRandom.get(1).isDama()) {
+								mossaRobot = "D";	
+							}
+							else {
+								mossaRobot = "N";
+							}
+
+							mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
+
+							if(pedina.isDama()) {
+								mossaRobot += "D";	
+							}
+							else {
+								mossaRobot += "N";
+							}
+							mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
+							mossaTrovata = true;
+							mossaTrovata = true;
+						}
+					}
+					else {
+						mossaTrovata = false;
+						lblNewLabel_9.setVisible(true);
+						textField.setText("");
+					}	
 				}
 
-				if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
-					cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerDue, playerUno);
-				}
 
-
-				if(!cercaMossaRandom.isEmpty()) {
-					mosseDisponibiliNero = true;
-					Pedina pedina = cercaMossaRandom.get(0);
-					cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerDue, playerUno);
+				if(mossaTrovata) {
+					//System.out.println(scacchiera);
 					lblNewLabel_9.setVisible(false);
-					if(cercaMossaRandom.get(1).isDama()) {
-						mossaRobot = "D";	
-					}
-					else {
-						mossaRobot = "N";
-					}
-					
-					mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
 
-					if(pedina.isDama()) {
-						mossaRobot += "D";	
-					}
-					else {
-						mossaRobot += "N";
-					}
-					mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
-					
+
 					lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
 					lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
 					lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
@@ -262,255 +333,139 @@ public class PlayFrame {
 							}
 						}
 					}
+					table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));		
 
-					table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
-				}
-				else {
-					lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
-					mosseDisponibiliBianco = false;
-				}
+					//invia mossa a robot
+					if(connRobot.equalsIgnoreCase("SI")) {
+						try {
+							bufReader.writeUTF(mossaRobot);
+						} catch (IOException e1) {
+							System.out.println("Server exception: "+ e1.getMessage());
+							e1.printStackTrace();
+						}
+					}
+					textField.setVisible(false);
+					btnNewButton.setVisible(true);
+					btnNewButton_1.setVisible(false);
 
-				//invia mossa a robot
-				if(connRobot.equalsIgnoreCase("SI")) {
-					try {
-						bufReader.writeUTF(mossaRobot);
-					} catch (IOException e1) {
-						System.out.println("Server exception: "+ e1.getMessage());
-						e1.printStackTrace();
+					//controllo fine partita
+					if(playerUno.getPedineInGioco() < 3 || playerDue.getPedineInGioco() < 3) {
+						finePartita = true;
+						lblNewLabel.setVisible(false);
+						textField.setVisible(false);
+						lblNewLabel_8.setVisible(false);
+						btnNewButton.setVisible(false);
 					}
 				}
-				giocaPlayerUno = true;
-				textField.setVisible(true);
-				textField.setText("");
-				btnNewButton_1.setVisible(false);
-			
 			}
 		});
+
+
+
 		btnNewButton_1.setBounds(20, 232, 127, 23);
 		frame.getContentPane().add(btnNewButton_1);
-		
-		
-		btnNewButton.addActionListener(new ActionListener() {
 
+
+		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String mossaRobot = "";
 				if(!finePartita) {
 
 					//gioca player Uno
-					if(giocaPlayerUno) {
-						ArrayList<Pedina> cercaMossaRandom = null;
+					//	if(giocaPlayerUno) {
+					ArrayList<Pedina> cercaMossaRandom = null;
 
-						if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
-							cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerUno, playerDue);
-						}
+					if(modalita.equalsIgnoreCase(UtilityParameter.facile)) {
+						cercaMossaRandom = ai.cercaMossaRandom(scacchiera, playerUno, playerDue);
+					}
 
-						if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
-							cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerUno, playerDue);
-						}
+					if(modalita.equalsIgnoreCase(UtilityParameter.aggressiva)) {
+						cercaMossaRandom = ai.cercaMossaAggressiva(scacchiera, playerUno, playerDue);
+					}
 
 
-						if(!cercaMossaRandom.isEmpty()) {
-							lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" "+cercaMossaRandom.toString());
-							mosseDisponibiliBianco = true;
-							Pedina pedina = cercaMossaRandom.get(0);
-							cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerUno, playerDue);
-							
-							if(cercaMossaRandom.get(1).isDama()) {
-								mossaRobot = "D";	
-							}
-							else {
-								mossaRobot = "N";
-							}
-							
-							mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
+					if(!cercaMossaRandom.isEmpty()) {
+						lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" "+cercaMossaRandom.toString());
+						Pedina pedina = cercaMossaRandom.get(0);
+						cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerUno, playerDue);
 
-							if(pedina.isDama()) {
-								mossaRobot += "D";	
-							}
-							else {
-								mossaRobot += "N";
-							}
-							mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
-							
-							lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
-							lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
-							lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
-							lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
-
-							Object[][] scacchieraTemporany = new Object[][] {
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-								{null, null, null, null, null, null, null, null},
-							};
-
-							for(int i = 0 ; i< 8; i++) {
-								for(int j = 0; j < 8 ; j++) {
-									if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-										scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
-									}
-								}
-							}
-
-							table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
+						if(cercaMossaRandom.get(1).isDama()) {
+							mossaRobot = "D";	
 						}
 						else {
-							lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
-							mosseDisponibiliBianco = false;
+							mossaRobot = "N";
 						}
 
-						//invia mossa a robot
-						if(connRobot.equalsIgnoreCase("SI")) {
-							try {
-								bufReader.writeUTF(mossaRobot);
-							} catch (IOException e1) {
-								System.out.println("Server exception: "+ e1.getMessage());
-								e1.printStackTrace();
+						mossaRobot += cercaMossaRandom.get(1).getPosI()+""+cercaMossaRandom.get(1).getPosJ();
+
+						if(pedina.isDama()) {
+							mossaRobot += "D";	
+						}
+						else {
+							mossaRobot += "N";
+						}
+						mossaRobot = pedina.getPosI()+""+pedina.getPosJ();
+
+						lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
+						lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
+						lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
+						lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
+
+						Object[][] scacchieraTemporany = new Object[][] {
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+							{null, null, null, null, null, null, null, null},
+						};
+
+						for(int i = 0 ; i< 8; i++) {
+							for(int j = 0; j < 8 ; j++) {
+								if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
+									scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
+								}
 							}
 						}
-						giocaPlayerUno = false;
-						textField.setVisible(true);
-						textField.setText("");
-						btnNewButton_1.setVisible(true);
 
+						table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));					
 					}
 					else {
-
-						//gioca player Due
-						boolean inserisciMossaPossibile = false;
-						while(!inserisciMossaPossibile) {
-							//legge mossa 
-							String mossaInput = textField.getText().toLowerCase();
-							int[] mosseInputParse = parseInput(mossaInput);
-
-							if(mosseInputParse != null) {
-
-								Pedina pedinaSposta = new Pedina(mosseInputParse[0],mosseInputParse[1],UtilityParameter.cellaNera);
-								Pedina pedinaSpostata = new Pedina(mosseInputParse[2],mosseInputParse[3],UtilityParameter.cellaNera);
-								//verifica mossa tra quelle disponibili
-								HashMap<Pedina,List<Pedina>> mossePossibili = cS.cercaMossa(scacchiera, playerDue, playerUno);
-
-								for (Pedina key : mossePossibili.keySet()) {
-									System.out.println(key + " = " + mossePossibili.get(key));
-								}
-
-								boolean mossaPossibile = false;
-								for (Pedina key : mossePossibili.keySet()) {
-									if(pedinaSposta.getPosI() == key.getPosI() && pedinaSposta.getPosJ() == key.getPosJ()) {
-										List<Pedina> resultMossePossibiliPedina = mossePossibili.get(key);
-										for(Pedina pedineMosse : resultMossePossibiliPedina) {
-											if(pedineMosse.getPosI() == pedinaSpostata.getPosI() && pedineMosse.getPosJ() == pedinaSpostata.getPosJ()) {
-												mossaPossibile = true;
-												pedinaSpostata = pedineMosse;
-												
-//												if(key.isDama()) {
-//													pedinaSpostata.setDama(true);
-//												}
-												break;
-											}
-										}
-									}
-								}
-
-								//fa la mossa
-								if(mossaPossibile) {
-									cS.movePedina(scacchiera,pedinaSposta.getPosI(), pedinaSposta.getPosJ(), pedinaSpostata.getPosI(), pedinaSpostata.getPosJ(), playerDue,playerUno);
-									
-									if(pedinaSpostata.isDama()) {
-										mossaRobot = "D";	
-									}
-									else {
-										mossaRobot = "N";
-									}
-									
-									mossaRobot += pedinaSpostata.getPosI()+""+pedinaSpostata.getPosJ();
-									
-									if(pedinaSposta.isDama()) {
-										mossaRobot += "D";	
-									}
-									else {
-										mossaRobot += "N";
-									}		
-									mossaRobot += pedinaSposta.getPosI()+""+pedinaSposta.getPosJ();
-									
-									
-									//System.out.println(scacchiera);
-									lblNewLabel_9.setVisible(false);
-									inserisciMossaPossibile = true;
-
-									lblNewLabel_3.setText("Perse: " +playerDue.getPedinePerse());
-									lblNewLabel_6.setText("Perse: " +playerUno.getPedinePerse());
-									lblNewLabel_5.setText("In gioco: "+playerDue.getPedineInGioco());
-									lblNewLabel_7.setText("In gioco: "+playerUno.getPedineInGioco());
-
-									Object[][] scacchieraTemporany = new Object[][] {
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-										{null, null, null, null, null, null, null, null},
-									};
-
-									for(int i = 0 ; i< 8; i++) {
-										for(int j = 0; j < 8 ; j++) {
-											if(!scacchiera.getScacchiera()[i][j].getColore().equals(UtilityParameter.cellaEmpty)) {
-												scacchieraTemporany[i][j] = scacchiera.getScacchiera()[i][j].getColore()+"-"+scacchiera.getScacchiera()[i][j].isDama();
-											}
-										}
-									}
-									table.setModel(new DefaultTableModel(scacchieraTemporany,new String[] {"A", "B", "C", "D", "E", "F", "G", "H"}));		
-
-									//invia mossa a robot
-									if(connRobot.equalsIgnoreCase("SI")) {
-										try {
-											bufReader.writeUTF(mossaRobot);
-										} catch (IOException e1) {
-											System.out.println("Server exception: "+ e1.getMessage());
-											e1.printStackTrace();
-										}
-									}
-									textField.setVisible(false);
-									giocaPlayerUno = true;
-								}
-								else {
-									inserisciMossaPossibile = true;
-									lblNewLabel_9.setVisible(true);
-									textField.setText("");
-								}
-
-							}
-							else {
-								inserisciMossaPossibile = true;
-								lblNewLabel_9.setVisible(true);
-								textField.setText("");
-							}	
-						}
+						lblNewLabel_8.setText("Mossa "+playerUno.getNome()+" NESSUNA");
 					}
 
+					//invia mossa a robot
+					if(connRobot.equalsIgnoreCase("SI")) {
+						try {
+							bufReader.writeUTF(mossaRobot);
+						} catch (IOException e1) {
+							System.out.println("Server exception: "+ e1.getMessage());
+							e1.printStackTrace();
+						}
+					}
+					textField.setVisible(true);
+					textField.setText("");
+					btnNewButton_1.setVisible(true);
+					btnNewButton.setVisible(false);
+
 					//controllo fine partita
-					//TODO da sistemare
 					if(playerUno.getPedineInGioco() < 3 || playerDue.getPedineInGioco() < 3) {
 						finePartita = true;
 						lblNewLabel.setVisible(false);
 						textField.setVisible(false);
-						lblNewLabel_8.setVisible(false);			
+						lblNewLabel_8.setVisible(false);	
+						btnNewButton.setVisible(false);
 					}
 				}
 			}
 		});
-		btnNewButton.setBounds(187, 232, 89, 23);
+		btnNewButton.setBounds(187, 232, 151, 23);
 		frame.getContentPane().add(btnNewButton);
 
 		frame.getContentPane().add(lblNewLabel_9);
-		
-		
+
 	}
 
 	//parse della mossa in input
