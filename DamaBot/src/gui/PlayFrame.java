@@ -202,6 +202,7 @@ public class PlayFrame {
 
 		
 		JButton btnNewButton_1 = new JButton("Mossa Bianco");
+		btnNewButton_1.setVisible(false);
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String mossaRobot = "";
@@ -220,7 +221,7 @@ public class PlayFrame {
 					mosseDisponibiliNero = true;
 					Pedina pedina = cercaMossaRandom.get(0);
 					cS.movePedina(scacchiera, pedina.getPosI(), pedina.getPosJ(), cercaMossaRandom.get(1).getPosI(),cercaMossaRandom.get(1).getPosJ(), playerDue, playerUno);
-					
+					lblNewLabel_9.setVisible(false);
 					if(cercaMossaRandom.get(1).isDama()) {
 						mossaRobot = "D";	
 					}
@@ -281,7 +282,7 @@ public class PlayFrame {
 				giocaPlayerUno = true;
 				textField.setVisible(true);
 				textField.setText("");
-
+				btnNewButton_1.setVisible(false);
 			
 			}
 		});
@@ -374,6 +375,7 @@ public class PlayFrame {
 						giocaPlayerUno = false;
 						textField.setVisible(true);
 						textField.setText("");
+						btnNewButton_1.setVisible(true);
 
 					}
 					else {
@@ -496,6 +498,9 @@ public class PlayFrame {
 					//TODO da sistemare
 					if(playerUno.getPedineInGioco() < 3 || playerDue.getPedineInGioco() < 3) {
 						finePartita = true;
+						lblNewLabel.setVisible(false);
+						textField.setVisible(false);
+						lblNewLabel_8.setVisible(false);			
 					}
 				}
 			}

@@ -82,11 +82,11 @@ public class ControlliSchacchiera {
 		if(pedina.isDama()) {
 			//posso spostarmi in alto a destra, in alto a sinistra, in basso a destra e in basso a sinistra
 			//mi sposto in basso a destra
-			if(posIpedina < 7 && posJpedina > 0) {
+			if(posIpedina < 7 && posJpedina > 0 && posJpedina < 7) {
 				result.addAll(spostaBassoDestra(scacchiera,pedina));
 			}
 			//mi sposto in basso a sinistra
-			if(posIpedina < 7 && posJpedina < 7) {
+			if(posIpedina < 7 && posJpedina < 7 && posJpedina > 0) {
 				result.addAll(spostaBassoSinistra(scacchiera,pedina));
 			}
 			//mi sposto in alto a destra
